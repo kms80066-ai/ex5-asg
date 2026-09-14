@@ -40,16 +40,17 @@ jobs:
         docker push 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/nginx:latest
         
 
-    # - name: 컨테이너 배포
-    #   run: |
-    #     aws ssm send-command \
-    #       --instance-ids "i-07ffa4cd292129532" \
-    #       --document-name "AWS-RunShellScript" \
-    #       --parameters "commands=[
-    #       \"sudo docker pull minseung12/nginx:1.31.3-cd\",
-    #       \"sudo docker stop nginx-container || true\",
-    #       \"sudo docker rm nginx-container || true\",
-    #       \"sudo docker run -d --name nginx-container -p 80:80 minseung12/nginx:1.31.3-cd\"
-    #       ]" \
-    #       --region ${{secrets.AWS_REGION}} \
-    #       --comment "Deploying SSM"
+    - name: 컨테이너 배포
+      run: |
+        aws ssm send-command \
+          --instance-ids "i-07ffa4cd292129532" \
+          --document-name "AWS-RunShellScript" \
+          --parameters "commands=[
+          \"aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 925047940866.dkr.ecr.ca-central-1.amazonaws.com\",
+          \"sudo docker pull 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/nginx:latest\",
+          \"sudo docker stop nginx-container || true\",
+          \"sudo docker rm nginx-container || true\",
+          \"sudo docker run -d --name nginx-container -p 80:80 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/nginx:latest\"
+          ]" \
+          --region ${{secrets.AWS_REGION}} \
+          --comment "Deploying SSM"
