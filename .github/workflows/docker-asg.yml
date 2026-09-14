@@ -42,7 +42,7 @@ jobs:
     - name: S3 정적 웹사이트로 배포
       run: |
         # 전체 동기화
-        aws s3 cp ./docker-compose.yaml s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml --delete
+        aws s3 cp ./docker-compose.yaml s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml
 
     - name: 컨테이너 배포
       run: |
@@ -53,10 +53,10 @@ jobs:
           \"aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 925047940866.dkr.ecr.ca-central-1.amazonaws.com\",
           \"sudo docker stop nginx-container || true\",
           \"sudo docker rm nginx-container || true\",
-          \"aws s3 cp s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml ./docker-compose.yaml\",
-          \"docker compose pull\",
-          \"docker compose up -d --remove-orphans\",
-          \"docker image prune -f\"
+          \"sudo aws s3 cp s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml ./docker-compose.yaml\",
+          \"sudo docker compose pull\",
+          \"sudo docker compose up -d --remove-orphans\",
+          \"sudo docker image prune -f\"
           ]" \
           --region ${{secrets.AWS_REGION}} \
           --comment "Deploying SSM"
