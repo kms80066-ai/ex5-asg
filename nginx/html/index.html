@@ -1,129 +1,203 @@
-<!DOCTYPEdoctype html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MSP 6기 CI/CD 실습 (Purple Ver.)</title>
+    <title>{{ data.title }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        /* [변경] 배경색: 연한 보라색/핑크색 그라데이션 */
-        background: linear-gradient(
-          to top right,
-          #f3e5f5 0%, /* 연한 보라 */
-          #ffffff 50%,
-          #fce4ec 100%  /* 연한 핑크 */
-        );
-        background-attachment: fixed;
+        font-family: "Noto Sans KR", sans-serif;
+        scroll-behavior: smooth;
+        background-color: #f0f7ff;
       }
 
-      .container {
+      /* Hero Section - Kubernetes Deep Blue */
+      .hero-section {
+        height: 100vh;
+        background: linear-gradient(135deg, #326ce5 0%, #1a3a7a 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+
+      /* 4개 카테고리 박스 (Jinja2 Loop 적용 대상) */
+      .category-box {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 25px;
         text-align: center;
-        background: rgba(255, 255, 255, 0.98);
-        
-        /* [변경] 박스 모양: 정원(Circle)으로 변경 */
-        width: 300px;           /* 너비 고정 */
-        height: 300px;          /* 높이 고정 (너비와 동일하게) */
-        border-radius: 50%;     /* 완전한 원형 */
-        
-        /* 내부 컨텐츠 중앙 정렬을 위한 flex 설정 */
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: white;
+        height: 220px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center;
-        
-        /* 패딩 조정 (원형 안쪽에 맞게) */
-        padding: 2rem; 
-        box-sizing: border-radius;
-
-        /* [변경] 그림자: 보라색 톤으로 변경 */
-        box-shadow: 0 15px 35px rgba(106, 27, 154, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        
-        transition:
-          transform 0.3s ease,
-          box-shadow 0.3s ease;
-        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       }
 
-      .container:hover {
-        transform: translateY(-8px);
-        /* [변경] 호버 그림자: 보라색 톤 */
-        box-shadow: 0 20px 40px rgba(106, 27, 154, 0.15);
-        animation: shake 0.4s ease-in-out 0s 2;
+      /* 상하 흔들림 애니메이션 (1초) */
+      @keyframes verticalShake {
+        0% {
+          transform: translateY(0);
+        }
+        25% {
+          transform: translateY(-7px);
+        }
+        50% {
+          transform: translateY(7px);
+        }
+        75% {
+          transform: translateY(-3px);
+        }
+        100% {
+          transform: translateY(0);
+        }
       }
 
-      /* 이미지 스타일: 유지 (원형으로 깔끔하게 정렬) */
-      .profile-img {
-        width: 70px;  /* 원형 박스에 맞춰 크기 살짝 조정 */
-        height: 70px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 1rem;
-        /* [변경] 테두리 색상: 연한 보라 */
-        border: 3px solid #f3e5f5;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      .category-box:hover {
+        animation: verticalShake 1s ease-in-out;
+        background: rgba(255, 255, 255, 0.25);
+        border-color: #87afff;
+        color: #ffffff;
       }
 
-      @keyframes shake {
-        0% { transform: translateY(-8px) rotate(0deg); }
-        25% { transform: translateY(-8px) rotate(0.3deg); }
-        50% { transform: translateY(-8px) rotate(0deg); }
-        75% { transform: translateY(-8px) rotate(-0.3deg); }
-        100% { transform: translateY(-8px) rotate(0deg); }
+      .content-section {
+        padding: 120px 0;
+        min-height: 85vh;
       }
-
-      h1 {
-        /* [변경] 제목 색상: 진한 보라 */
-        color: #6a1b9a;
-        margin: 0 0 0.3rem 0;
-        font-size: 1.5rem; /* 원형 박스에 맞춰 크기 살짝 조정 */
-        letter-spacing: -1px;
+      .section-title {
+        font-weight: 700;
+        color: #326ce5;
+        border-left: 6px solid #326ce5;
+        padding-left: 20px;
+        margin-bottom: 50px;
       }
-      p {
-        color: #555;
-        font-size: 0.9rem; /* 원형 박스에 맞춰 크기 살짝 조정 */
-        line-height: 1.4;
-        margin-top: 0;
-        margin-bottom: 1.2rem;
+      .bg-ocean {
+        background-color: #e9f2ff;
       }
-      strong {
-        /* [변경] 포인트 색상: 밝은 보라 */
-        color: #9c27b0;
+      .card {
+        border: none;
+        border-top: 4px solid #326ce5;
       }
-
-      .status-badge {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        /* [변경] 뱃지 색상: 보라색 그라데이션 */
-        background: linear-gradient(45deg, #7b1fa2, #9c27b0);
-        color: white;
-        border-radius: 50px;
+      code {
+        color: #326ce5;
         font-weight: bold;
-        font-size: 0.75rem;
-        /* [변경] 뱃지 그림자: 보라색 톤 */
-        box-shadow: 0 4px 10px rgba(123, 31, 162, 0.3);
-        text-transform: uppercase;
-        letter-spacing: 1px;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <img
-        src="/images/graduation-cap.png"
-        alt="Graduation Cap"
-        class="profile-img"
-      />
+    <section class="hero-section text-center">
+      <div class="container">
+        <div class="mb-5">
+          <h1 class="display-3 fw-bold">{{ data.title }}</h1>
+          <p class="lead opacity-75">{{ data.subtitle }}</p>
+        </div>
 
-      <h1>MSP 6기</h1>
-      <p><strong>GitHub Actions</strong>를 이용한<br />Nginx 자동 배포 성공!</p>
-      <div class="status-badge">CD Pipeline Active</div>
-    </div>
+        <div class="row g-4">
+          {% for item in data.sections %}
+          <div class="col-md-3">
+            <a href="#{{ item.id }}" class="category-box">
+              <h4 class="fw-bold">{{ item.title }}</h4>
+              <p class="small mb-0 opacity-75">{{ item.desc }}</p>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="arch" class="content-section">
+      <div class="container">
+        <h2 class="section-title">01. Cluster Architecture</h2>
+        <p>
+          쿠버네티스는 클러스터 전체를 관리하는 <strong>Control Plane</strong>과
+          실제 컨테이너가 가동되는 <strong>Worker Node</strong>로 구성됩니다.
+        </p>
+        <div class="row g-4 mt-3">
+          <div class="col-md-6">
+            <div class="card shadow-sm h-100 p-3">
+              <h5>Control Plane Components</h5>
+              <ul class="text-muted">
+                <li>kube-apiserver: 모든 API 요청의 관문</li>
+                <li>etcd: 클러스터 데이터 저장소</li>
+                <li>kube-scheduler: 포드 배치 결정</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm h-100 p-3">
+              <h5>Worker Node Components</h5>
+              <ul class="text-muted">
+                <li>kubelet: 각 노드에서 실행되는 에이전트</li>
+                <li>kube-proxy: 네트워크 규칙 관리</li>
+                <li>Container Runtime: 컨테이너 실행 환경</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="object" class="content-section bg-ocean">
+      <div class="container text-center">
+        <h2 class="section-title text-start">02. Kubernetes Objects</h2>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold">Pod</h5>
+              <p class="small text-muted">가장 작은 배포 단위</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold">Deployment</h5>
+              <p class="small text-muted">상태 유지 및 업데이트 관리</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold">Service</h5>
+              <p class="small text-muted">안정적인 네트워크 엔드포인트</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="network" class="content-section">
+      <div class="container">
+        <h2 class="section-title">03. Networking & Ingress</h2>
+        <div class="bg-dark text-info p-4 rounded-4 shadow">
+          <pre class="mb-0"><code class="text-info bg-transparent">kind: Ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api
+        backend:
+          service:
+            name: fastapi-service</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-5 text-center bg-dark text-white-50">
+      <p>&copy; 2026 Ian's K8s Guide | Built with FastAPI & Jinja2</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

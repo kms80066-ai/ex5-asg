@@ -43,6 +43,7 @@ jobs:
       run: |
         # 전체 동기화
         aws s3 cp ./docker-compose.yaml s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml
+        aws s3 sync ./nginx/html/ s3://bipa17-std09-cicd-925047940866-ca-central-1-website/html/ --delete
 
     - name: 컨테이너 배포
       run: |
@@ -54,6 +55,7 @@ jobs:
           \"sudo docker stop nginx-container || true\",
           \"sudo docker rm nginx-container || true\",
           \"sudo aws s3 cp s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml ./docker-compose.yaml\",
+          \"sudo aws s3 sync s3://bipa17-std09-cicd-925047940866-ca-central-1-website/html/ /nginx/html/\",
           \"sudo docker compose pull\",
           \"sudo docker compose up -d --remove-orphans\",
           \"sudo docker image prune -f\"
