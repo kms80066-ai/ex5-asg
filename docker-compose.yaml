@@ -7,14 +7,33 @@ services:
       - "80:80"
     volumes:
       # - /home/ec2-user/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # EC2에서 S3 HTML을 받아두는 폴더
       - /nginx/html:/usr/share/nginx/html
     #   - /home/ec2-user/nginx/logs:/var/log/nginx
+     # Docker Named Volume 실습용
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - my-app
     restart: always
     networks:
-      - public-subnet
-        aliases:
-          - nginx
+      - app-network
+
+  my-app:
+    image: 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/fastapi:latest
+    container_name: fastapi-container
+
+    expose:
+      - "8000"
+
+    restart: always
+
+    networks:
+      - app-network
+
+volumes:
+  nginx-logs:
+
 
 networks:
-  public-subnet:
+  app-network:
     driver: bridge

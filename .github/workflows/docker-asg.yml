@@ -28,16 +28,27 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build and push Docker image to ECR
-      # env: 
-      #   ECR_REGISTRY: ${{}}
+      env: 
+        ECR_REGISTRY: ${{ECR_REGISTRY}}
       #   ECR_REPOSITORY: ${{}}
       #   IMAGE_TAG: ${{github.sha}}
       run: |
-        docker build --no-cache -t 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/nginx:1.31.3-ecr ./nginx
-        docker build --no-cache -t 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/nginx:latest ./nginx
+        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/nginx:1.31.3-ecr ./nginx
+        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/nginx:latest ./nginx
 
-        docker push 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/nginx:1.31.3-ecr
-        docker push 925047940866.dkr.ecr.ca-central-1.amazonaws.com/std09/nginx:latest
+        docker push ${{ECR_REGISTRY}}/std09/nginx:1.31.3-ecr
+        docker push ${{ECR_REGISTRY}}/std09/nginx:latest
+      # =====================================================
+      # FastAPI 이미지 Build / Push
+      # =====================================================
+    - name: Build and push FastAPI image
+      run: |
+        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/fastapi:1.0-ecr ./fastapi
+        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/fastapi:latest ./fastapi
+
+        docker push ${{ECR_REGISTRY}}/std09/fastapi:1.0-ecr
+        docker push ${{ECR_REGISTRY}}/std09/fastapi:latest
+
         
     - name: S3 정적 웹사이트로 배포
       run: |
@@ -51,14 +62,15 @@ jobs:
           --targets "Key=tag:Cicd,Values=asg" \
           --document-name "AWS-RunShellScript" \
           --parameters "commands=[
-          \"aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 925047940866.dkr.ecr.ca-central-1.amazonaws.com\",
+          \"mkdir -p /nginx/html /opt/app\",
+          \"sudo aws ecr get-login-password --region ca-central-1 | sudo docker login --username AWS --password-stdin 925047940866.dkr.ecr.ca-central-1.amazonaws.com\",
           \"sudo docker stop nginx-container || true\",
           \"sudo docker rm nginx-container || true\",
-          \"sudo aws s3 cp s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml ./docker-compose.yaml\",
+          \"sudo aws s3 cp s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml /opt/app/docker-compose.yaml\",
           \"sudo aws s3 sync s3://bipa17-std09-cicd-925047940866-ca-central-1-website/html/ /nginx/html/\",
-          \"sudo docker compose pull\",
-          \"sudo docker compose up -d --remove-orphans\",
+          \"cd /opt/app && sudo docker compose pull\",
+          \"cd /opt/app && sudo docker compose up -d --remove-orphans\",
           \"sudo docker image prune -f\"
           ]" \
           --region ${{secrets.AWS_REGION}} \
-          --comment "Deploying SSM"
+          --comment "Deploying Nginx and FastAPI with SSM"

@@ -1,0 +1,22 @@
+# Web Framework & Server
+fastapi
+uvicorn[standard]
+
+# Template Engine (Jinja2 SPA 렌더링용)
+jinja2
+
+# Data Validation & Schemas
+pydantic
+
+# Database Driver (MySQL/MariaDB 연동)
+pymysql
+
+# Security & Tunneling (Private DB 접속용)
+sshtunnel
+cryptography
+
+# AWS SDK (Secrets Manager 및 인프라 연동)
+boto3
+
+# Environment Variables Management (.env 파일 관리)
+python-dotenv

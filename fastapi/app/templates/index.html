@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ data.title }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        scroll-behavior: smooth;
+        background-color: #f0f7ff;
+      }
+
+      /* Hero Section - Kubernetes Deep Blue */
+      .hero-section {
+        height: 100vh;
+        background: linear-gradient(135deg, #326ce5 0%, #1a3a7a 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+
+      /* 4개 카테고리 박스 (Jinja2 Loop 적용 대상) */
+      .category-box {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: white;
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      /* 상하 흔들림 애니메이션 (1초) */
+      @keyframes verticalShake {
+        0% {
+          transform: translateY(0);
+        }
+        25% {
+          transform: translateY(-7px);
+        }
+        50% {
+          transform: translateY(7px);
+        }
+        75% {
+          transform: translateY(-3px);
+        }
+        100% {
+          transform: translateY(0);
+        }
+      }
+
+      .category-box:hover {
+        animation: verticalShake 1s ease-in-out;
+        background: rgba(255, 255, 255, 0.25);
+        border-color: #87afff;
+        color: #ffffff;
+      }
+
+      .content-section {
+        padding: 120px 0;
+        min-height: 85vh;
+      }
+      .section-title {
+        font-weight: 700;
+        color: #326ce5;
+        border-left: 6px solid #326ce5;
+        padding-left: 20px;
+        margin-bottom: 50px;
+      }
+      .bg-ocean {
+        background-color: #e9f2ff;
+      }
+      .card {
+        border: none;
+        border-top: 4px solid #326ce5;
+      }
+      code {
+        color: #326ce5;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="hero-section text-center">
+      <div class="container">
+        <div class="mb-5">
+          <h1 class="display-3 fw-bold">{{ data.title }}</h1>
+          <p class="lead opacity-75">{{ data.subtitle }}</p>
+        </div>
+
+        <div class="row g-4">
+          {% for item in data.sections %}
+          <div class="col-md-3">
+            <a href="#{{ item.id }}" class="category-box">
+              <h4 class="fw-bold">{{ item.title }}</h4>
+              <p class="small mb-0 opacity-75">{{ item.desc }}</p>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="arch" class="content-section">
+      <div class="container">
+        <h2 class="section-title">01. Cluster Architecture</h2>
+        <p>
+          쿠버네티스는 클러스터 전체를 관리하는 <strong>Control Plane</strong>과
+          실제 컨테이너가 가동되는 <strong>Worker Node</strong>로 구성됩니다.
+        </p>
+        <div class="row g-4 mt-3">
+          <div class="col-md-6">
+            <div class="card shadow-sm h-100 p-3">
+              <h5>Control Plane Components</h5>
+              <ul class="text-muted">
+                <li>kube-apiserver: 모든 API 요청의 관문</li>
+                <li>etcd: 클러스터 데이터 저장소</li>
+                <li>kube-scheduler: 포드 배치 결정</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm h-100 p-3">
+              <h5>Worker Node Components</h5>
+              <ul class="text-muted">
+                <li>kubelet: 각 노드에서 실행되는 에이전트</li>
+                <li>kube-proxy: 네트워크 규칙 관리</li>
+                <li>Container Runtime: 컨테이너 실행 환경</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="object" class="content-section bg-ocean">
+      <div class="container text-center">
+        <h2 class="section-title text-start">02. Kubernetes Objects</h2>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold">Pod</h5>
+              <p class="small text-muted">가장 작은 배포 단위</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold">Deployment</h5>
+              <p class="small text-muted">상태 유지 및 업데이트 관리</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold">Service</h5>
+              <p class="small text-muted">안정적인 네트워크 엔드포인트</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="network" class="content-section">
+      <div class="container">
+        <h2 class="section-title">03. Networking & Ingress</h2>
+        <div class="bg-dark text-info p-4 rounded-4 shadow">
+          <pre class="mb-0"><code class="text-info bg-transparent">kind: Ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api
+        backend:
+          service:
+            name: fastapi-service</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-5 text-center bg-dark text-white-50">
+      <p>&copy; 2026 Ian's K8s Guide | Built with FastAPI & Jinja2</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
