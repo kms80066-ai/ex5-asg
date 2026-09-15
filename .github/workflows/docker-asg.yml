@@ -1,76 +1,96 @@
-# 워크플로우(작업) 이름
 name: GitOps CI Pipeline
-# 1. 트리거 설정: 브랜치 정의
+
 on:
   push:
     branches:
-    - main
+      - main
 
 jobs:
   build-and-update:
-    runs-on: ubuntu-latest  # 실제 작업 주체
-    
-    # 작업 절차
+    runs-on: ubuntu-latest
+
     steps:
-    - name: 소스코드 전송
-      uses: actions/checkout@v4
-    
-    - name: AWS 자격 증명 설정
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{secrets.AWS_ACCESS_KEY}}
-        aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-        aws-region: ${{secrets.AWS_REGION}}
+      # =====================================================
+      # GitHub Repository 소스 가져오기
+      # =====================================================
+      - name: 소스코드 전송
+        uses: actions/checkout@v4
 
-    # ECR에 Docker 이미지 빌드 및 푸시
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+      # =====================================================
+      # AWS 인증
+      # =====================================================
+      - name: AWS 자격 증명 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Build and push Docker image to ECR
-      env: 
-        ECR_REGISTRY: ${{ECR_REGISTRY}}
-      #   ECR_REPOSITORY: ${{}}
-      #   IMAGE_TAG: ${{github.sha}}
-      run: |
-        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/nginx:1.31.3-ecr ./nginx
-        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/nginx:latest ./nginx
+      # =====================================================
+      # ECR 로그인
+      # =====================================================
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-        docker push ${{secrets.ECR_REGISTRY}}/std09/nginx:1.31.3-ecr
-        docker push ${{secrets.ECR_REGISTRY}}/std09/nginx:latest
+      # =====================================================
+      # Nginx 이미지 Build / Push
+      # =====================================================
+      - name: Build and push Nginx image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build --no-cache \
+            -t $ECR_REGISTRY/std09/nginx:1.31.3-ecr \
+            -t $ECR_REGISTRY/std09/nginx:latest \
+            ./nginx
+
+          docker push $ECR_REGISTRY/std09/nginx:1.31.3-ecr
+          docker push $ECR_REGISTRY/std09/nginx:latest
+
       # =====================================================
       # FastAPI 이미지 Build / Push
       # =====================================================
-    - name: Build and push FastAPI image
-      run: |
-        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/fastapi:1.0-ecr ./fastapi
-        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/fastapi:latest ./fastapi
+      - name: Build and push FastAPI image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build --no-cache \
+            -t $ECR_REGISTRY/std09/fastapi:1.0-ecr \
+            -t $ECR_REGISTRY/std09/fastapi:latest \
+            ./fastapi
 
-        docker push ${{secrets.ECR_REGISTRY}}/std09/fastapi:1.0-ecr
-        docker push ${{secrets.ECR_REGISTRY}}/std09/fastapi:latest
+          docker push $ECR_REGISTRY/std09/fastapi:1.0-ecr
+          docker push $ECR_REGISTRY/std09/fastapi:latest
 
-        
-    - name: S3 정적 웹사이트로 배포
-      run: |
-        # 전체 동기화
-        aws s3 cp ./docker-compose.yaml s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml
-        aws s3 sync ./nginx/html/ s3://bipa17-std09-cicd-925047940866-ca-central-1-website/html/ --delete
+      # =====================================================
+      # HTML + docker-compose.yaml S3 업로드
+      # =====================================================
+      - name: S3 배포 파일 업로드
+        run: |
+          aws s3 cp ./docker-compose.yaml \
+            s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml
 
-    - name: 컨테이너 배포
-      run: |
-        aws ssm send-command \
-          --targets "Key=tag:Cicd,Values=asg" \
-          --document-name "AWS-RunShellScript" \
-          --parameters "commands=[
-          \"mkdir -p /nginx/html /opt/app\",
-          \"sudo aws ecr get-login-password --region ca-central-1 | sudo docker login --username AWS --password-stdin 925047940866.dkr.ecr.ca-central-1.amazonaws.com\",
-          \"sudo docker stop nginx-container || true\",
-          \"sudo docker rm nginx-container || true\",
-          \"sudo aws s3 cp s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml /opt/app/docker-compose.yaml\",
-          \"sudo aws s3 sync s3://bipa17-std09-cicd-925047940866-ca-central-1-website/html/ /nginx/html/\",
-          \"cd /opt/app && sudo docker compose pull\",
-          \"cd /opt/app && sudo docker compose up -d --remove-orphans\",
-          \"sudo docker image prune -f\"
-          ]" \
-          --region ${{secrets.AWS_REGION}} \
-          --comment "Deploying Nginx and FastAPI with SSM"
+          aws s3 sync ./nginx/html/ \
+            s3://bipa17-std09-cicd-925047940866-ca-central-1-website/html/ \
+            --delete
+
+      # =====================================================
+      # ASG 인스턴스에 컨테이너 배포
+      # =====================================================
+      - name: 컨테이너 배포
+        run: |
+          aws ssm send-command \
+            --targets "Key=tag:Cicd,Values=asg" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+            \"mkdir -p /nginx/html /opt/app\",
+            \"sudo aws ecr get-login-password --region ca-central-1 | sudo docker login --username AWS --password-stdin 925047940866.dkr.ecr.ca-central-1.amazonaws.com\",
+            \"sudo aws s3 cp s3://bipa17-std09-cicd-925047940866-ca-central-1-website/docker-compose.yaml /opt/app/docker-compose.yaml\",
+            \"sudo aws s3 sync s3://bipa17-std09-cicd-925047940866-ca-central-1-website/html/ /nginx/html/ --delete\",
+            \"cd /opt/app && sudo docker compose pull\",
+            \"cd /opt/app && sudo docker compose up -d --remove-orphans\",
+            \"sudo docker image prune -f\"
+            ]" \
+            --region "${{ secrets.AWS_REGION }}" \
+            --comment "Deploying Nginx and FastAPI with SSM"
