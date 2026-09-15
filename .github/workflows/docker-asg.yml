@@ -33,21 +33,21 @@ jobs:
       #   ECR_REPOSITORY: ${{}}
       #   IMAGE_TAG: ${{github.sha}}
       run: |
-        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/nginx:1.31.3-ecr ./nginx
-        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/nginx:latest ./nginx
+        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/nginx:1.31.3-ecr ./nginx
+        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/nginx:latest ./nginx
 
-        docker push ${{ECR_REGISTRY}}/std09/nginx:1.31.3-ecr
-        docker push ${{ECR_REGISTRY}}/std09/nginx:latest
+        docker push ${{secrets.ECR_REGISTRY}}/std09/nginx:1.31.3-ecr
+        docker push ${{secrets.ECR_REGISTRY}}/std09/nginx:latest
       # =====================================================
       # FastAPI 이미지 Build / Push
       # =====================================================
     - name: Build and push FastAPI image
       run: |
-        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/fastapi:1.0-ecr ./fastapi
-        docker build --no-cache -t ${{ECR_REGISTRY}}/std09/fastapi:latest ./fastapi
+        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/fastapi:1.0-ecr ./fastapi
+        docker build --no-cache -t ${{secrets.ECR_REGISTRY}}/std09/fastapi:latest ./fastapi
 
-        docker push ${{ECR_REGISTRY}}/std09/fastapi:1.0-ecr
-        docker push ${{ECR_REGISTRY}}/std09/fastapi:latest
+        docker push ${{secrets.ECR_REGISTRY}}/std09/fastapi:1.0-ecr
+        docker push ${{secrets.ECR_REGISTRY}}/std09/fastapi:latest
 
         
     - name: S3 정적 웹사이트로 배포
